@@ -1,0 +1,45 @@
+pipeline {
+    agent any
+
+    triggers {
+        pollSCM('* * * * *')
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Compile') {
+            steps {
+                bat 'mvn -B compile'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                bat 'mvn -B test'
+            }
+        }
+
+        stage('Package') {
+            steps {
+                bat 'mvn -B package'
+            }
+        }
+    }
+
+    post {
+        success {
+            archiveArtifacts artifacts: 'target/*.jar',
+                             fingerprint: true
+            echo 'CI/CD Pipeline completed successfully!'
+        }
+
+        failure {
+            echo 'Pipeline failed. Check the Console Output.'
+        }
+    }
+}
